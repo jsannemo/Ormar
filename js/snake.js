@@ -140,12 +140,28 @@ var Renderer = function(canvasId, game) {
     this.lastRender = Date.now();
 };
 
-Renderer.prototype.drawCircle = function(context, x, y, diameter) {
+CanvasRenderingContext2D.prototype.drawCircle = function(context, x, y, diameter) {
     context.beginPath();
     var cx = x + diameter / 2;
     var cy = y + diameter / 2;
     context.arc(cx, cy, diameter / 2, 0, 2 * Math.PI, false);
     context.fill();
+};
+
+CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    //From http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
+    if (w < 2 * r)
+        r = w / 2;
+    if (h < 2 * r)
+        r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
 };
 
 Renderer.prototype.render = function() {
@@ -176,7 +192,7 @@ Renderer.prototype.renderMeter = function(ctx, game) {
     ctx.fillStyle = "rgb(0, 0, 0)";
     ctx.strokeRect(20, game.board.height * TILE_SIZE + 10, game.board.width * TILE_SIZE - 40, 30);
     ctx.fillRect(20, game.board.height * TILE_SIZE + 10, (game.board.width * TILE_SIZE - 40) * (1 - game.hunger), 30);
-    ctx.fillText("Score: "+Math.floor(game.score), 20, game.board.height * TILE_SIZE + 54);
+    ctx.fillText("Score: " + Math.floor(game.score), 20, game.board.height * TILE_SIZE + 54);
     ctx.restore();
 };
 
@@ -202,10 +218,21 @@ Renderer.prototype.renderSnake = function(ctx, game) {
         snakeLight = 2 - snakeLight;
     if (snakeLight < 0.05)
         snakeLight = 0;
-    ctx.fillStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
     for (var i = 0; i < snakeSegments.length; ++i) {
         var coord = snakeSegments[i];
-        ctx.fillRect(coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        if(i !== snakeSegments.length - 1){
+            var next = snakeSegments[i+1];
+            ctx.strokeStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
+            ctx.beginPath();
+            ctx.moveTo((coord.x + 0.5) * TILE_SIZE, (coord.y + 0.5) * TILE_SIZE);
+            ctx.lineTo((next.x + 0.5) * TILE_SIZE, (next.y + 0.5) * TILE_SIZE);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        ctx.fillStyle = "rgb(0,0,0)";
+        ctx.roundRect(coord.x * TILE_SIZE + 5, coord.y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10, 5).fill();
+        ctx.strokeStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
+        ctx.roundRect(coord.x * TILE_SIZE + 5, coord.y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10, 5).stroke();
     }
     ctx.restore();
 };
@@ -222,7 +249,7 @@ Renderer.prototype.renderFood = function(ctx, game) {
         ctx.fillStyle = "hsl(" + foods[i].type.hue + ", 100%, " + pulse + "%)";
         ctx.shadowColor = "hsl(" + foods[i].type.hue + ", 100%, " + (pulse + 20) + "%)";
         var coord = foods[i].coordinate;
-        this.drawCircle(ctx, coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE);
+        ctx.drawCircle(ctx, coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE*0.8);
     }
     ctx.restore();
 };
@@ -292,15 +319,15 @@ Game.prototype.update = function() {
         if (food.type === foodTypes[0])
             this.newFood(0);
     }
-    for(var i = 0; i < foodTypes.length; ++i){
-        if(Math.random() < foodProbs[i]){
+    for (var i = 0; i < foodTypes.length; ++i) {
+        if (Math.random() < foodProbs[i]) {
             this.newFood(i);
         }
     }
     var ends = this.snake.move();
     var head = ends[0];
     var tail = ends[1];
-    if (this.snake.count(head) > 1 || !this.board.isWithin(head)) {
+    if (this.hunger > 1 - 1e-4 || this.snake.count(head) > 1 || !this.board.isWithin(head)) {
         this.snake.alive = false;
         this.gameOver();
         return false;
