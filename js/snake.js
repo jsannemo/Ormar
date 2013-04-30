@@ -130,7 +130,7 @@ var POWERUP_FOOD_FRENZY = 1;
 var POWERUP_SPEEDUP = 2;
 var POWERUP_SPEEDDOWN = 3;
 
-var SHOW_DURATION = 30000;
+var SHOW_DURATION = 5000;
 
 var FOOD_TYPES = 5;
 var POWERUP_COUNT = 2;
@@ -141,12 +141,12 @@ var foodTypes = [
     new FoodType(3, -0.4, 20000, 290, []),
     new FoodType(3, 0.3, 10000, 240, []),
     new FoodType(5, -0.2, 30000, 0, []),
-    new FoodType(0, 1, 15000, 40, [POWERUP_SHOW]),
+    new FoodType(0, 0.5, 15000, 40, [POWERUP_SHOW]),
     new FoodType(0, 0, 15000, 160, [POWERUP_FOOD_FRENZY]),
     new FoodType(0, 0, 15000, 200, [POWERUP_SPEEDUP]),
     new FoodType(0, 0, 15000, 340, [POWERUP_SPEEDDOWN])
 ];
-var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.001, 0.001, 0.001, 0.001];
+var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.01, 0.001, 0.005, 0.005];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
