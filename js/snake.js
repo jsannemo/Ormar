@@ -1,7 +1,7 @@
 (function() {
-  var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-  window.requestAnimationFrame = requestAnimationFrame;
+    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    window.requestAnimationFrame = requestAnimationFrame;
 })();
 
 var Util = {
@@ -42,6 +42,7 @@ var Snake = function(headCoordinate, direction, game) {
     this.stomach = 0;
     this.alwaysShow = 0;
     this.game = game;
+    this.speedModifier = 1;
 };
 
 Snake.prototype.move = function() {
@@ -78,9 +79,26 @@ Snake.prototype.consume = function(food) {
                 this.alwaysShow = SHOW_DURATION;
                 break;
             case POWERUP_FOOD_FRENZY:
-                for(var i = 0; i < 5; ++i){
-                    this.game.newFood(Math.floor(Math.random() * (FOOD_TYPES - 1) - 1e-7) + 1);
+                var sum = 0;
+                for (var i = 1; i < FOOD_TYPES - 1; ++i)
+                    sum += foodProbs[i];
+                for (var i = 0; i < 5; ++i) {
+                    var rnd = Math.random();
+                    var cumul = 0;
+                    for (var j = 1; j < FOOD_TYPES - 1; ++j) {
+                        cumul += foodProbs[j] / sum;
+                        if (rnd <= cumul + 1e-7) {
+                            this.game.newFood(j);
+                            break;
+                        }
+                    }
                 }
+                break;
+            case POWERUP_SPEEDDOWN:
+                this.speedModifier *= 1.05;
+                break;
+            case POWERUP_SPEEDDOWN:
+                this.speedModifier *= 1 / 1.05;
                 break;
         }
     }
@@ -109,6 +127,9 @@ var FoodType = function(energy, hunger, expiry, colorHue, powerUps) {
 
 var POWERUP_SHOW = 0;
 var POWERUP_FOOD_FRENZY = 1;
+var POWERUP_SPEEDUP = 2;
+var POWERUP_SPEEDDOWN = 3;
+
 var SHOW_DURATION = 30000;
 
 var FOOD_TYPES = 5;
@@ -120,10 +141,12 @@ var foodTypes = [
     new FoodType(3, -0.4, 20000, 290, []),
     new FoodType(3, 0.3, 10000, 240, []),
     new FoodType(5, -0.2, 30000, 0, []),
-    new FoodType(0, 1, 15000, 50, [POWERUP_SHOW]),
-    new FoodType(0, 0, 15000, 50, [POWERUP_FOOD_FRENZY])
+    new FoodType(0, 1, 15000, 40, [POWERUP_SHOW]),
+    new FoodType(0, 0, 15000, 160, [POWERUP_FOOD_FRENZY]),
+    new FoodType(0, 0, 15000, 200, [POWERUP_SPEEDUP]),
+    new FoodType(0, 0, 15000, 340, [POWERUP_SPEEDDOWN])
 ];
-var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.005, 0.001];
+var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.001, 0.001, 0.001, 0.001];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
@@ -379,13 +402,16 @@ Game.prototype.update = function() {
     }
     this.board.setOccupied(tail, false);
     this.board.setOccupied(head, true);
-    this.tickSpeed = Math.max(30, INITIAL_SPEED - 3 * this.snake.segments.length);
+    this.tickSpeed = Math.max(30, INITIAL_SPEED - 3 * this.snake.segments.length) * this.snake.speedModifier;
     this.score += (1 - this.hunger) * this.snake.segments.length;
     return true;
 };
 
 Game.prototype.gameOver = function() {
-    alert("You died :(");
+    var highscore = window.localStorage.getItem("highscore") || 0;
+    alert("You died :(\nYour score was: " + Math.floor(this.score) + ".\nYour previous high score is " + highscore + ".\n" + (this.score > highscore ? "You pwned it!" : "Better luck next time."));
+    if (this.score > highscore)
+        window.localStorage.setItem("highscore", Math.floor(this.score));
     this.running = false;
 };
 
