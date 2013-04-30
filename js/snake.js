@@ -135,7 +135,7 @@ var Renderer = function(canvasId, game) {
     this.tileSize = TILE_SIZE;
     var canvas = document.getElementById(canvasId);
     canvas.width = game.board.width * TILE_SIZE;
-    canvas.height = game.board.height * TILE_SIZE + 50;
+    canvas.height = game.board.height * TILE_SIZE + 70;
     this.snakeLight = 100;
     this.lastRender = Date.now();
 };
@@ -169,13 +169,14 @@ Renderer.prototype.renderBackground = function(ctx, game) {
 Renderer.prototype.renderMeter = function(ctx, game) {
     ctx.save();
     ctx.fillStyle = "rgb(255, 255, 255)";
-    ctx.fillRect(20, game.board.height * TILE_SIZE + 10, game.board.width * TILE_SIZE - 40, 30);
+    ctx.fillRect(0, game.board.height * TILE_SIZE, game.board.width * TILE_SIZE, 70);
     ctx.translate(0.5, 0.5); //FIXME: hack för att undvika antialiasing
     ctx.lineWidth = 0;
     ctx.strokeStyle = "rgb(0, 0, 0)";
     ctx.fillStyle = "rgb(0, 0, 0)";
     ctx.strokeRect(20, game.board.height * TILE_SIZE + 10, game.board.width * TILE_SIZE - 40, 30);
     ctx.fillRect(20, game.board.height * TILE_SIZE + 10, (game.board.width * TILE_SIZE - 40) * (1 - game.hunger), 30);
+    ctx.fillText("Score: "+Math.floor(game.score), 20, game.board.height * TILE_SIZE + 54);
     ctx.restore();
 };
 
@@ -229,6 +230,7 @@ Renderer.prototype.renderFood = function(ctx, game) {
 var INITIAL_LENGTH = 5;
 
 var Game = function(input) {
+    this.score = 0;
     this.board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
     this.snake = new Snake(new Vector(Math.floor(BOARD_WIDTH / 2) - INITIAL_LENGTH, Math.floor(BOARD_HEIGHT / 2)), 1);
     this.snake.stomach = INITIAL_LENGTH - 1;
@@ -306,6 +308,7 @@ Game.prototype.update = function() {
     this.board.setOccupied(tail, false);
     this.board.setOccupied(head, true);
     this.tickSpeed = Math.max(30, INITIAL_SPEED - 3 * this.snake.segments.length);
+    this.score += (1 - this.hunger) * this.snake.segments.length;
     return true;
 };
 
