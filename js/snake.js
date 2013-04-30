@@ -28,12 +28,14 @@ var delta = [
     new Vector(-1, 0)
 ];
 
-var Snake = function(headCoordinate, direction) {
+var Snake = function(headCoordinate, direction, game) {
     this.direction = direction;
     this.newDirection = direction;
     this.segments = [headCoordinate];
     this.isAlive = true;
     this.stomach = 0;
+    this.alwaysShow = 0;
+    this.game = game;
 };
 
 Snake.prototype.move = function() {
@@ -64,6 +66,18 @@ Snake.prototype.getHead = function() {
 
 Snake.prototype.consume = function(food) {
     this.stomach += food.type.energy;
+    for (var i = 0; i < food.type.powerUps.length; ++i) {
+        switch (food.type.powerUps[i]) {
+            case POWERUP_SHOW:
+                this.alwaysShow = SHOW_DURATION;
+                break;
+            case POWERUP_FOOD_FRENZY:
+                for(var i = 0; i < 5; ++i){
+                    this.game.newFood(Math.floor(Math.random() * (FOOD_TYPES - 1) - 1e-7) + 1);
+                }
+                break;
+        }
+    }
 };
 
 Snake.prototype.count = function(coordinate) {
@@ -79,15 +93,31 @@ Snake.prototype.getNext = function() {
     return this.segments[0].translate(delta[this.newDirection]);
 };
 
-var FoodType = function(energy, hunger, expiry, colorHue) {
+var FoodType = function(energy, hunger, expiry, colorHue, powerUps) {
     this.energy = energy;
     this.hunger = hunger;
     this.expiry = expiry;
     this.hue = colorHue;
+    this.powerUps = powerUps;
 };
 
-var foodTypes = [new FoodType(1, 0.1, -1, 100), new FoodType(3, 0.3, 10000, 240), new FoodType(5, -0.2, 30000, 0)];
-var foodProbs = [0, 0.01, 0.005];
+var POWERUP_SHOW = 0;
+var POWERUP_FOOD_FRENZY = 1;
+var SHOW_DURATION = 30000;
+
+var FOOD_TYPES = 5;
+var POWERUP_COUNT = 2;
+
+var foodTypes = [
+    new FoodType(1, 0.1, -1, 100, []),
+    new FoodType(3, 1, 20000, 290, []),
+    new FoodType(3, -0.4, 20000, 290, []),
+    new FoodType(3, 0.3, 10000, 240, []),
+    new FoodType(5, -0.2, 30000, 0, []),
+    new FoodType(0, 1, 15000, 50, [POWERUP_SHOW]),
+    new FoodType(0, 0, 15000, 50, [POWERUP_FOOD_FRENZY])
+];
+var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.005, 0.0001];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
@@ -140,12 +170,12 @@ var Renderer = function(canvasId, game) {
     this.lastRender = Date.now();
 };
 
-CanvasRenderingContext2D.prototype.drawCircle = function(context, x, y, diameter) {
-    context.beginPath();
+CanvasRenderingContext2D.prototype.drawCircle = function(x, y, diameter) {
+    this.beginPath();
     var cx = x + diameter / 2;
     var cy = y + diameter / 2;
-    context.arc(cx, cy, diameter / 2, 0, 2 * Math.PI, false);
-    context.fill();
+    this.arc(cx, cy, diameter / 2, 0, 2 * Math.PI, false);
+    return this;
 };
 
 CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
@@ -218,10 +248,13 @@ Renderer.prototype.renderSnake = function(ctx, game) {
         snakeLight = 2 - snakeLight;
     if (snakeLight < 0.05)
         snakeLight = 0;
+    if (game.snake.alwaysShow > 0) {
+        snakeLight = 1;
+    }
     for (var i = 0; i < snakeSegments.length; ++i) {
         var coord = snakeSegments[i];
-        if(i !== snakeSegments.length - 1){
-            var next = snakeSegments[i+1];
+        if (i !== snakeSegments.length - 1) {
+            var next = snakeSegments[i + 1];
             ctx.strokeStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
             ctx.beginPath();
             ctx.moveTo((coord.x + 0.5) * TILE_SIZE, (coord.y + 0.5) * TILE_SIZE);
@@ -249,7 +282,12 @@ Renderer.prototype.renderFood = function(ctx, game) {
         ctx.fillStyle = "hsl(" + foods[i].type.hue + ", 100%, " + pulse + "%)";
         ctx.shadowColor = "hsl(" + foods[i].type.hue + ", 100%, " + (pulse + 20) + "%)";
         var coord = foods[i].coordinate;
-        ctx.drawCircle(ctx, coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE*0.8);
+        if (foods[i].type.powerUps.length > 0) {
+            //Food is powerup - draw square
+            ctx.fillRect((coord.x + 0.1) * TILE_SIZE, (coord.y + 0.1) * TILE_SIZE, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
+        } else {
+            ctx.drawCircle(coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE * 0.8).fill();
+        }
     }
     ctx.restore();
 };
@@ -259,7 +297,7 @@ var INITIAL_LENGTH = 5;
 var Game = function(input) {
     this.score = 0;
     this.board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
-    this.snake = new Snake(new Vector(Math.floor(BOARD_WIDTH / 2) - INITIAL_LENGTH, Math.floor(BOARD_HEIGHT / 2)), 1);
+    this.snake = new Snake(new Vector(Math.floor(BOARD_WIDTH / 2) - INITIAL_LENGTH, Math.floor(BOARD_HEIGHT / 2)), 1, this);
     this.snake.stomach = INITIAL_LENGTH - 1;
     for (var i = 1; i < INITIAL_LENGTH; ++i) {
         this.snake.move();
@@ -303,6 +341,7 @@ Game.prototype.update = function() {
         this.snake.turn(-1);
         this.input.isRight = false;
     }
+    this.snake.alwaysShow = Math.max(this.snake.alwaysShow - this.tickSpeed, 0);
     var newHead = this.snake.getNext();
     for (var i = 0; i < this.foods.length; ++i) {
         if (this.foods[i].isExpired()) {
