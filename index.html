@@ -9,8 +9,35 @@
         <script src="js/snake.js"></script>
     </head>
     <body>
-        <div id="display">
-            <canvas id="snake" width="500" height="500"></canvas>
+
+        <div id="wrapper">
+            <div id="rightBar">
+                <div id="rules">
+                    <h1>Ormar</h1>
+                    A challenging clone of the old, popular arcade game Snake.
+                    <h3>Controls</h3>
+                    <dl><dt>Left arrow<dd>Turns the snake left
+                        <dt>Right arrow<dd>Turns the snake right</dl>
+                    <p>To restart, refresh the page.</p>
+                    <h3>Food types</h3>
+                    <dl><dt>Green food (basic)<dd>Small length increase, small energy increase
+                        <dt>Blue food (nom nom nom)<dd>Medium length increase, medium energy increase
+                        <dt>Red food (it buuuurns!)<dd>High length increase, small energy decrease</dl>
+                    <h3>Energy</h3>
+                    <p>
+                        The meter at the bottom of the play area is your energy meter.
+                        When your energy decrease, your snake will be blacked out for
+                        longer periods of time.
+                    </p>
+                </div>
+                <div id="desc">
+                    Made by <a href="https://github.com/jsannemo/">Johan Sannemo</a>. Git repository available at
+                    <a href="https://github.com/jsannemo/ormar">Github</a>.
+                </div>
+            </div>
+            <div id="display">
+                <canvas id="snake" width="500" height="500"></canvas>
+            </div>
         </div>
     </body>
 </html>

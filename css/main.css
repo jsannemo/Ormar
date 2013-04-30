@@ -5,11 +5,10 @@
 
 html {
     padding: 30px 10px;
-    font-size: 20px;
-    line-height: 1.4;
+    font-size: 11px;
+
     color: #737373;
     background: #f0f0f0;
-
 }
 
 html,
@@ -18,15 +17,48 @@ input {
 }
 
 body {
-    text-align: center;
 }
 
 div#display {
-    min-width: 600px;
+    width: 600px;
     padding: 20px 20px 20px;
     border: 1px solid #b3b3b3;
     margin: 0 auto;
     box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
     background: #fcfcfc;
     display: inline-block;
+}
+
+div#rules {
+    width: 300px;
+    padding: 20px 20px 20px;
+    border: 1px solid #b3b3b3;
+    margin: 0 auto;
+    box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
+    background: #fcfcfc;
+}
+
+div#rightBar {
+    width: 350px;
+    float:right;
+    margin: 0 auto;
+
+}
+
+div#desc {
+    width: 300px;
+    padding: 20px 20px 20px;
+    border: 1px solid #b3b3b3;
+    margin: 10px auto;
+    box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
+    background: #fcfcfc;
+}
+
+div#wrapper {
+    width: 995px;
+    margin: auto;
+}
+
+h1 {
+    margin-top: 0;
 }
