@@ -86,8 +86,8 @@ var FoodType = function(energy, hunger, expiry, colorHue) {
     this.hue = colorHue;
 };
 
-var foodTypes = [new FoodType(1, 0.01, -1, 100), new FoodType(3, 0.3, 10000, 240)];
-var foodProbs = [0, 0.01];
+var foodTypes = [new FoodType(1, 0.1, -1, 100), new FoodType(3, 0.3, 10000, 240), new FoodType(5, -0.2, 30000, 0)];
+var foodProbs = [0, 0.01, 0.005];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
@@ -305,6 +305,7 @@ Game.prototype.update = function() {
     }
     this.board.setOccupied(tail, false);
     this.board.setOccupied(head, true);
+    this.tickSpeed = Math.max(30, INITIAL_SPEED - 3 * this.snake.segments.length);
     return true;
 };
 
