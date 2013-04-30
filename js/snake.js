@@ -123,7 +123,7 @@ var foodTypes = [
     new FoodType(0, 1, 15000, 50, [POWERUP_SHOW]),
     new FoodType(0, 0, 15000, 50, [POWERUP_FOOD_FRENZY])
 ];
-var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.005, 0.0001];
+var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.005, 0.001];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
