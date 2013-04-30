@@ -1,3 +1,9 @@
+(function() {
+  var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+  window.requestAnimationFrame = requestAnimationFrame;
+})();
+
 var Util = {
     clamp: function(val, min, max) {
         return Math.min(Math.max(min, val), max);
