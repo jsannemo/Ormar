@@ -1,0 +1,32 @@
+::selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+html {
+    padding: 30px 10px;
+    font-size: 20px;
+    line-height: 1.4;
+    color: #737373;
+    background: #f0f0f0;
+
+}
+
+html,
+input {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body {
+    text-align: center;
+}
+
+div#display {
+    min-width: 600px;
+    padding: 20px 20px 20px;
+    border: 1px solid #b3b3b3;
+    margin: 0 auto;
+    box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
+    background: #fcfcfc;
+    display: inline-block;
+}
