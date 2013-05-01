@@ -100,6 +100,12 @@ Snake.prototype.consume = function(food) {
             case POWERUP_SPEEDDOWN:
                 this.speedModifier *= 1 / 1.05;
                 break;
+            case POWERUP_CUTOFF:
+                var segments = new Array(this.segments.length / 2);
+                for (var i = 0; i < segments.length; ++i)
+                    segments[i] = this.segments[i];
+                this.segments = segments;
+                break;
         }
     }
 };
@@ -132,6 +138,7 @@ var POWERUP_SHOW = 0;
 var POWERUP_FOOD_FRENZY = 1;
 var POWERUP_SPEEDUP = 2;
 var POWERUP_SPEEDDOWN = 3;
+var POWERUP_CUTOFF = 4;
 
 var SHOW_DURATION = 5000;
 
@@ -139,17 +146,18 @@ var FOOD_TYPES = 5;
 var POWERUP_COUNT = 2;
 
 var foodTypes = [
-    new FoodType(1, 0.1, -1, 100, []),
-    new FoodType(3, 1, 20000, 290, []),
-    new FoodType(3, -0.4, 20000, 290, []),
-    new FoodType(3, 0.3, 10000, 240, []),
-    new FoodType(5, -0.2, 30000, 0, []),
-    new FoodType(0, 0.5, 15000, 40, [POWERUP_SHOW]),
-    new FoodType(0, 0, 15000, 160, [POWERUP_FOOD_FRENZY]),
-    new FoodType(0, 0, 15000, 200, [POWERUP_SPEEDUP]),
-    new FoodType(0, 0, 15000, 340, [POWERUP_SPEEDDOWN])
+    new FoodType(1, 0.1, -1, 100, []), //green
+    new FoodType(3, 1, 20000, 290, []), //violett
+    new FoodType(3, -0.4, 20000, 290, []), //violett
+    new FoodType(3, 0.3, 10000, 240, []), //blue
+    new FoodType(5, -0.2, 30000, 0, []), //red
+    new FoodType(0, 0.5, 15000, 30, [POWERUP_SHOW]),  //orange
+    new FoodType(0, 0, 15000, 170, [POWERUP_FOOD_FRENZY]), //cyan
+    new FoodType(0, 0, 15000, 55, [POWERUP_SPEEDUP]), //greenish
+    new FoodType(0, 0, 15000, 270, [POWERUP_SPEEDDOWN]), //purple
+    new FoodType(0, 0, 15000, 220, [POWERUP_CUTOFF]) //blue
 ];
-var foodProbs = [0, 0.01, 0.001, 0.01, 0.005, 0.01, 0.001, 0.005, 0.005];
+var foodProbs = [0, 0.01, 0.001, 0.02, 0.005, 0.002, 0.002, 0.002, 0.002, 0.002];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
