@@ -101,7 +101,7 @@ Snake.prototype.consume = function(food) {
                 this.speedModifier *= 1 / 1.05;
                 break;
             case POWERUP_CUTOFF:
-                var segments = new Array(this.segments.length / 2);
+                var segments = new Array(Math.floor(this.segments.length / 2 + 1));
                 for (var i = 0; i < segments.length; ++i)
                     segments[i] = this.segments[i];
                 this.segments = segments;
@@ -157,7 +157,7 @@ var foodTypes = [
     new FoodType(0, 0, 15000, 270, [POWERUP_SPEEDDOWN]), //purple
     new FoodType(0, 0, 15000, 220, [POWERUP_CUTOFF]) //blue
 ];
-var foodProbs = [0, 0.01, 0.001, 0.02, 0.005, 0.002, 0.002, 0.002, 0.002, 0.002];
+var foodProbs = [0, 0.01, 0.001, 0.02, 0.005, 0.002, 0.002, 0.002, 0.002, 0.1];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
