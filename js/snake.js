@@ -114,7 +114,10 @@ Snake.prototype.count = function(coordinate) {
 };
 
 Snake.prototype.getNext = function() {
-    return this.segments[0].translate(delta[this.newDirection]);
+    var coord = this.segments[0].translate(delta[this.newDirection]);
+    coord.x = (coord.x + this.game.board.width) % this.game.board.width;
+    coord.y = (coord.y + this.game.board.height) % this.game.board.height;
+    return coord;
 };
 
 var FoodType = function(energy, hunger, expiry, colorHue, powerUps) {
@@ -160,7 +163,7 @@ Food.prototype.isExpired = function() {
 
 var BOARD_WIDTH = 30;
 var BOARD_HEIGHT = 25;
-var INITIAL_SPEED = 200;
+var INITIAL_SPEED = 300;
 
 var Board = function(width, height) {
     this.width = width;
@@ -282,15 +285,6 @@ Renderer.prototype.renderSnake = function(ctx, game) {
     }
     for (var i = 0; i < snakeSegments.length; ++i) {
         var coord = snakeSegments[i];
-        if (i !== snakeSegments.length - 1) {
-            var next = snakeSegments[i + 1];
-            ctx.strokeStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
-            ctx.beginPath();
-            ctx.moveTo((coord.x + 0.5) * TILE_SIZE, (coord.y + 0.5) * TILE_SIZE);
-            ctx.lineTo((next.x + 0.5) * TILE_SIZE, (next.y + 0.5) * TILE_SIZE);
-            ctx.closePath();
-            ctx.stroke();
-        }
         ctx.fillStyle = "rgb(0,0,0)";
         ctx.roundRect(coord.x * TILE_SIZE + 5, coord.y * TILE_SIZE + 5, TILE_SIZE - 10, TILE_SIZE - 10, 5).fill();
         ctx.strokeStyle = "hsl(0, 100%, " + snakeLight * 0.6 * 100 + "%)";
