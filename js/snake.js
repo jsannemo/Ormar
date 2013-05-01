@@ -157,7 +157,7 @@ var foodTypes = [
     new FoodType(0, 0, 15000, 270, [POWERUP_SPEEDDOWN]), //purple
     new FoodType(0, 0, 15000, 220, [POWERUP_CUTOFF]) //blue
 ];
-var foodProbs = [0, 0.01, 0.001, 0.02, 0.005, 0.002, 0.002, 0.002, 0.002, 0.1];
+var foodProbs = [0, 0.01, 0.001, 0.02, 0.005, 0.002, 0.002, 0.002, 0.002, 0.002];
 
 var Food = function(coordinate, type) {
     this.coordinate = coordinate;
@@ -317,7 +317,7 @@ Renderer.prototype.renderFood = function(ctx, game) {
             //Food is powerup - draw square
             ctx.fillRect((coord.x + 0.1) * TILE_SIZE, (coord.y + 0.1) * TILE_SIZE, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
         } else {
-            ctx.drawCircle(coord.x * TILE_SIZE, coord.y * TILE_SIZE, TILE_SIZE * 0.8).fill();
+            ctx.drawCircle((coord.x + 0.1) * TILE_SIZE, (coord.y+ 0.1) * TILE_SIZE, TILE_SIZE * 0.8).fill();
         }
     }
     ctx.restore();
