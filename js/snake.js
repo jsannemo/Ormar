@@ -336,7 +336,7 @@ Renderer.prototype.renderSnake = function(ctx, game) {
         snakeLight = 2 - snakeLight;
     if (snakeLight < 0.05)
         snakeLight = 0;
-    if (game.snake.alwaysShow > 0) {
+    if (game.snake.alwaysShow > 0 || !game.snake.isAlive) {
         snakeLight = 1;
     }
     for (var i = 0; i < snakeSegments.length; ++i) {
@@ -446,15 +446,15 @@ Game.prototype.update = function() {
     var head = ends[0];
     var tail = ends[1];
     if (this.hunger > 1 - 1e-4 || this.snake.count(head) > 1 || !this.board.isWithin(head) || this.board.isObstacle(head)) {
-        this.snake.alive = false;
+        this.snake.isAlive = false;
         this.gameOver();
-        return false;
+        return;
     }
     this.board.setOccupied(tail, false);
     this.board.setOccupied(head, true);
     this.tickSpeed = Math.max(30, INITIAL_SPEED - 3 * this.snake.segments.length) * this.snake.speedModifier;
     this.score += (1 - this.hunger) * this.snake.segments.length;
-    return true;
+    return;
 };
 
 Game.prototype.gameOver = function() {
@@ -473,9 +473,7 @@ Game.prototype.tick = function() {
     this.hunger = Math.min(1, this.hunger + elapsed * 0.0000033);
     if (elapsed > this.tickSpeed) {
         this.lastTick += elapsed;
-        if (!this.update()) {
-            return;
-        }
+        this.update();
     }
     this.renderer.render();
     //Request new animation
