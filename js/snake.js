@@ -34,6 +34,29 @@ var delta = [
     new Vector(-1, 0)
 ];
 
+var Map = function(name, width, height, obstacles) {
+    this.name = name;
+    this.width = width;
+    this.height = height;
+    this.obstacles = obstacles;
+};
+//Popuplate maps
+
+var borderSquares = [];
+for (var i = 0; i < 30; ++i) {
+    borderSquares.push(new Vector(i, 0));
+    borderSquares.push(new Vector(i, 24));
+}
+for (var i = 0; i < 25; ++i) {
+    borderSquares.push(new Vector(0, i));
+    borderSquares.push(new Vector(29, i));
+}
+
+var maps = [
+    new Map("Plain", 30, 25, []),
+    new Map("Borders", 30, 25, borderSquares)
+];
+
 var Snake = function(headCoordinate, direction, game) {
     this.direction = direction;
     this.newDirection = direction;
@@ -151,7 +174,7 @@ var foodTypes = [
     new FoodType(3, -0.4, 20000, 290, []), //violett
     new FoodType(3, 0.3, 10000, 240, []), //blue
     new FoodType(5, -0.2, 30000, 0, []), //red
-    new FoodType(0, 0.5, 15000, 30, [POWERUP_SHOW]),  //orange
+    new FoodType(0, 0.5, 15000, 30, [POWERUP_SHOW]), //orange
     new FoodType(0, 0, 15000, 170, [POWERUP_FOOD_FRENZY]), //cyan
     new FoodType(0, 0, 15000, 55, [POWERUP_SPEEDUP]), //greenish
     new FoodType(0, 0, 15000, 270, [POWERUP_SPEEDDOWN]), //purple
@@ -169,19 +192,28 @@ Food.prototype.isExpired = function() {
     return this.type.expiry > 0 && Date.now() - this.placed > this.type.expiry;
 };
 
-var BOARD_WIDTH = 30;
-var BOARD_HEIGHT = 25;
+
 var INITIAL_SPEED = 300;
 
-var Board = function(width, height) {
-    this.width = width;
-    this.height = height;
-    this.filled = new Array(width);
+function make2DArray(width, height, fill) {
+    var array = new Array(width);
     for (var i = 0; i < width; ++i) {
-        this.filled[i] = new Array(height);
+        array[i] = new Array(height);
         for (var j = 0; j < height; ++j) {
-            this.filled[i][j] = false;
+            array[i][j] = fill;
         }
+    }
+    return array;
+}
+
+var Board = function(map) {
+    this.width = map.width;
+    this.height = map.height;
+    this.filled = make2DArray(this.width, this.height, false);
+    this.obstacle = make2DArray(this.width, this.height, false);
+    for (var i = 0; i < map.obstacles.length; ++i) {
+        var obst = map.obstacles[i];
+        this.obstacle[obst.x][obst.y] = this.filled[obst.x][obst.y] = true;
     }
 };
 
@@ -195,6 +227,10 @@ Board.prototype.isOccupied = function(coordinate) {
 
 Board.prototype.isWithin = function(coordinate) {
     return coordinate.x >= 0 && coordinate.y >= 0 && coordinate.x < this.width && coordinate.y < this.height;
+};
+
+Board.prototype.isObstacle = function(coordinate) {
+    return this.obstacle[coordinate.x][coordinate.y];
 };
 
 var TILE_SIZE = 20;
@@ -238,6 +274,7 @@ Renderer.prototype.render = function() {
     var ctx = document.getElementById(this.canvasId).getContext('2d');
     var game = this.game;
     this.renderBackground(ctx, game);
+    this.renderBoard(ctx, game);
     this.renderSnake(ctx, game);
     this.renderFood(ctx, game);
     this.renderMeter(ctx, game);
@@ -249,6 +286,17 @@ Renderer.prototype.renderBackground = function(ctx, game) {
     ctx.rect(0, 0, game.board.width * TILE_SIZE, game.board.height * TILE_SIZE);
     ctx.fillStyle = "rgb(0, 0, 0)";
     ctx.fill();
+    ctx.restore();
+};
+
+Renderer.prototype.renderBoard = function(ctx, game) {
+    ctx.save();
+    ctx.fillStyle = "rgb(150, 150, 150)";
+    for (var i = 0; i < game.board.width; ++i)
+        for (var j = 0; j < game.board.height; ++j)
+            if (game.board.obstacle[i][j]) {
+                ctx.fillRect(i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
     ctx.restore();
 };
 
@@ -317,7 +365,7 @@ Renderer.prototype.renderFood = function(ctx, game) {
             //Food is powerup - draw square
             ctx.fillRect((coord.x + 0.1) * TILE_SIZE, (coord.y + 0.1) * TILE_SIZE, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
         } else {
-            ctx.drawCircle((coord.x + 0.1) * TILE_SIZE, (coord.y+ 0.1) * TILE_SIZE, TILE_SIZE * 0.8).fill();
+            ctx.drawCircle((coord.x + 0.1) * TILE_SIZE, (coord.y + 0.1) * TILE_SIZE, TILE_SIZE * 0.8).fill();
         }
     }
     ctx.restore();
@@ -325,10 +373,10 @@ Renderer.prototype.renderFood = function(ctx, game) {
 
 var INITIAL_LENGTH = 5;
 
-var Game = function(input) {
+var Game = function(input, map) {
     this.score = 0;
-    this.board = new Board(BOARD_WIDTH, BOARD_HEIGHT);
-    this.snake = new Snake(new Vector(Math.floor(BOARD_WIDTH / 2) - INITIAL_LENGTH, Math.floor(BOARD_HEIGHT / 2)), 1, this);
+    this.board = new Board(map);
+    this.snake = new Snake(new Vector(Math.floor(this.board.width / 2) - INITIAL_LENGTH, Math.floor(this.board.height / 2)), 1, this);
     this.snake.stomach = INITIAL_LENGTH - 1;
     for (var i = 1; i < INITIAL_LENGTH; ++i) {
         this.snake.move();
@@ -397,7 +445,7 @@ Game.prototype.update = function() {
     var ends = this.snake.move();
     var head = ends[0];
     var tail = ends[1];
-    if (this.hunger > 1 - 1e-4 || this.snake.count(head) > 1 || !this.board.isWithin(head)) {
+    if (this.hunger > 1 - 1e-4 || this.snake.count(head) > 1 || !this.board.isWithin(head) || this.board.isObstacle(head)) {
         this.snake.alive = false;
         this.gameOver();
         return false;
@@ -471,9 +519,14 @@ Input.prototype.keyUp = function(key) {
 };
 
 
-$(document).ready(function() {
+var game;
+
+function startGame() {
+    if(typeof game !== "undefined"){
+        game.running = false;
+    }
     var input = new Input();
-    var game = new Game(input);
+    game = new Game(input, maps[$("#mapChooser").val()]);
     var renderer = new Renderer("snake", game);
     $("body").bind({
         keydown: function(e) {
@@ -488,4 +541,15 @@ $(document).ready(function() {
 
     game.renderer = renderer;
     game.start();
+}
+
+$(document).ready(function() {
+
+    for (var i = 0; i < maps.length; ++i) {
+        $("#mapChooser").append("<option value=" + i + " label='" + maps[i].name + "' />");
+    }
+    
+    $("#startButton").click(function(){
+        startGame();
+    });
 });

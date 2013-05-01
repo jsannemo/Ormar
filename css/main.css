@@ -38,11 +38,25 @@ div#rules {
     background: #fcfcfc;
 }
 
+div#settings{
+    width: 300px;
+    padding: 20px 20px 20px;
+    border: 1px solid #b3b3b3;
+    margin: 0 auto;
+    box-shadow: 0 1px 10px #a7a7a7, inset 0 1px 0 #fff;
+    background: #fcfcfc;
+}
+
 div#rightBar {
     width: 350px;
     float:right;
     margin: 0 auto;
 
+}
+div#leftBar{
+    width: 350px;
+    float:left;
+    margin: 0 auto;
 }
 
 div#desc {
@@ -55,10 +69,23 @@ div#desc {
 }
 
 div#wrapper {
-    width: 995px;
+    width: 1345px;
     margin: auto;
 }
 
 h1 {
     margin-top: 0;
+}
+
+label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#startButton {
+    margin-top: 10px;
+    height: 30px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: bold;
 }
