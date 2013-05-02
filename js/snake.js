@@ -500,9 +500,15 @@ var Input = function() {
     this.rightCode = RIGHT_ARROW;
     this.isLeft = false;
     this.isRight = false;
+    this.ignoreNext = false;
 };
 
 Input.prototype.keyDown = function(key) {
+    if (this.ignoreNext) {
+        this.ignoreNext = false;
+        return;
+    }
+
     switch (key) {
         case this.leftCode:
             this.isLeft = true;
@@ -549,5 +555,10 @@ $(document).ready(function() {
     
     $("#startButton").click(function(){
         startGame();
+        game.input.ignoreNext = true;
     });
+
+    $("body").click(function (e) {
+        game.input.keyDown (e.pageX > document.width/2 ? RIGHT_ARROW : LEFT_ARROW);
+    })
 });
